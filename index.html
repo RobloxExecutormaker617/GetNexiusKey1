@@ -22,6 +22,7 @@
             background-color: #1E1E1E;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 120, 215, 0.5);
+            width: 400px;
         }
         h1 {
             font-size: 24px;
@@ -67,8 +68,8 @@
         <h1>Nexius Executor Key Generator</h1>
         <p>Complete the task to get your key:</p>
         <button id="taskButton" onclick="openTask()">Task 1: Visit YouTube Channel</button>
-        <p>Click <a href="https://www.youtube.com/@glitch.exe.01" target="_blank">here</a> to subscribe to Glitch.exe.</p>
-        <button id="subscribeButton" onclick="completeTask()" disabled>Subscribe</button>
+        <p>Subscribe to <a href="https://www.youtube.com/@glitch.exe.01" target="_blank">Glitch.exe</a></p>
+        <button id="subscribeButton" onclick="completeTask()" disabled>Confirm Subscription</button>
         <button id="nextButton" onclick="generateKey()" disabled>Next</button>
         <p id="keyDisplay"></p>
     </div>
@@ -97,13 +98,17 @@
                 key += chars.charAt(Math.floor(Math.random() * chars.length));
             }
 
-            // Simulate IP (in real app, get from server)
-            const ip = await fetch('https://api.ipify.org?format=json')
-                .then(res => res.json())
-                .then(data => data.ip)
-                .catch(() => 'unknown');
+            // Get user IP
+            let ip;
+            try {
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                ip = (await ipResponse.json()).ip;
+            } catch {
+                document.getElementById('keyDisplay').innerText = 'Error: Could not fetch IP address.';
+                return;
+            }
 
-            // Simulate server validation
+            // Register key with server
             try {
                 const response = await fetch('http://localhost:3000/register-key', {
                     method: 'POST',
@@ -118,7 +123,7 @@
                         document.getElementById('keyDisplay').innerText = `Key: ${key} (copy failed, please copy manually)`;
                     });
                 } else {
-                    document.getElementById('keyDisplay').innerText = 'Error: Key registration failed.';
+                    document.getElementById('keyDisplay').innerText = `Error: ${result.message}`;
                 }
             } catch (err) {
                 document.getElementById('keyDisplay').innerText = 'Error: Could not connect to server.';
