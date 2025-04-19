@@ -108,7 +108,8 @@
                 return;
             }
 
-            // Register key with server
+            // Register key with server and determine action
+            let action = 'Kick'; // Default
             try {
                 const response = await fetch('http://localhost:3000/register-key', {
                     method: 'POST',
@@ -117,16 +118,30 @@
                 });
                 const result = await response.json();
                 if (result.success) {
+                    action = 'Accept';
                     navigator.clipboard.write(key).then(() => {
                         document.getElementById('keyDisplay').innerText = `Key: ${key} (copied to clipboard!)\nReturn to Nexius Executor and paste it.`;
                     }).catch(() => {
                         document.getElementById('keyDisplay').innerText = `Key: ${key} (copy failed, please copy manually)`;
                     });
                 } else {
+                    action = result.message.includes('IP already used') ? 'Ban' : 'Kick';
                     document.getElementById('keyDisplay').innerText = `Error: ${result.message}`;
                 }
             } catch (err) {
                 document.getElementById('keyDisplay').innerText = 'Error: Could not connect to server.';
+            }
+
+            // Send webhook message
+            try {
+                const webhookMessage = `**Nexius Key Generation**\nIP: ${ip}\nKey: ${key}\nAction: ${action}`;
+                await fetch('https://discord.com/api/webhooks/1363086205897539666/K3ty5bItFud5Kumwl6OHioY5d9BdaPnRbxA5HtNXRO-8WRjRveNo9hTx48_n4wagdn33', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: webhookMessage })
+                });
+            } catch (err) {
+                console.error('Webhook error:', err);
             }
 
             document.getElementById('nextButton').disabled = true;
