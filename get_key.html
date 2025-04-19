@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexius Key Generator</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #121212;
+            color: #FFFFFF;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            padding: 30px;
+            background-color: #1E1E1E;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 120, 215, 0.5);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #0078D7;
+        }
+        button {
+            background-color: #0078D7;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background-color: #005BA1;
+            box-shadow: 0 0 15px #0078D7;
+        }
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        #keyDisplay {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #00FF00;
+            word-break: break-all;
+        }
+        a {
+            color: #0078D7;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Nexius Executor Key Generator</h1>
+        <p>Complete the task to get your key:</p>
+        <button id="taskButton" onclick="openTask()">Task 1: Visit YouTube Channel</button>
+        <p>Click <a href="https://www.youtube.com/@glitch.exe.01" target="_blank">here</a> to subscribe to Glitch.exe.</p>
+        <button id="subscribeButton" onclick="completeTask()" disabled>Subscribe</button>
+        <button id="nextButton" onclick="generateKey()" disabled>Next</button>
+        <p id="keyDisplay"></p>
+    </div>
+    <script>
+        let taskCompleted = false;
+
+        function openTask() {
+            window.open('https://www.youtube.com/@glitch.exe.01', '_blank');
+            document.getElementById('subscribeButton').disabled = false;
+        }
+
+        function completeTask() {
+            taskCompleted = true;
+            document.getElementById('subscribeButton').disabled = true;
+            document.getElementById('nextButton').disabled = false;
+            document.getElementById('keyDisplay').innerText = 'Task completed! Click Next to generate your key.';
+        }
+
+        async function generateKey() {
+            if (!taskCompleted) return;
+
+            // Generate random key
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let key = 'NEXIUS-';
+            for (let i = 0; i < 9; i++) {
+                key += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
+            // Simulate IP (in real app, get from server)
+            const ip = await fetch('https://api.ipify.org?format=json')
+                .then(res => res.json())
+                .then(data => data.ip)
+                .catch(() => 'unknown');
+
+            // Simulate server validation
+            try {
+                const response = await fetch('http://localhost:3000/register-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key, ip })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    navigator.clipboard.write(key).then(() => {
+                        document.getElementById('keyDisplay').innerText = `Key: ${key} (copied to clipboard!)\nReturn to Nexius Executor and paste it.`;
+                    }).catch(() => {
+                        document.getElementById('keyDisplay').innerText = `Key: ${key} (copy failed, please copy manually)`;
+                    });
+                } else {
+                    document.getElementById('keyDisplay').innerText = 'Error: Key registration failed.';
+                }
+            } catch (err) {
+                document.getElementById('keyDisplay').innerText = 'Error: Could not connect to server.';
+            }
+
+            document.getElementById('nextButton').disabled = true;
+        }
+    </script>
+</body>
+</html>
